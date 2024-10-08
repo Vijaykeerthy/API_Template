@@ -6,8 +6,13 @@ app = Flask(__name__)
 api = Api(app)
 swagger = Swagger(app)
 
-class UppercaseText(Resource):
+def convert_to_uppercase(text):
+    """
+    Converts the input text to uppercase.
+    """
+    return text.upper()
 
+class UppercaseText(Resource):
     def get(self):
         """
         Convert provided text to uppercase.
@@ -19,7 +24,7 @@ class UppercaseText(Resource):
             in: query
             type: string
             required: true
-            description: Text to be converted to uppercase
+            description: The text to convert to uppercase
         responses:
           200:
             description: Successfully converted text
@@ -28,16 +33,30 @@ class UppercaseText(Resource):
                 schema:
                   type: object
                   properties:
-                    text:
+                    original_text:
                       type: string
-                      description: Uppercase version of the text
+                      description: The original input text
+                    uppercase_text:
+                      type: string
+                      description: The text in uppercase
+          400:
+            description: Input text is missing
         """
         text = request.args.get('text', '').strip()  # Safely handle empty input
+
         if not text:
             return jsonify({"error": "Text is required"}), 400
 
-        return jsonify({"text": text.upper()})
+        uppercase_text = convert_to_uppercase(text)
 
+        response = {
+            'original_text': text,
+            'uppercase_text': uppercase_text
+        }
+
+        return jsonify(response)
+
+# Adding the resource to the API
 api.add_resource(UppercaseText, "/uppercase")
 
 if __name__ == "__main__":
